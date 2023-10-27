@@ -10,6 +10,12 @@
         "default_tile.h": "c",
         "tile_image.h": "c",
         "dt_image_gen.h": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "skewed_tile.h": "c",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "vector": "cpp",
+        "tile_config.h": "c"
     }
 }

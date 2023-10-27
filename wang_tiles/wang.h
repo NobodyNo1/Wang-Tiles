@@ -1,9 +1,17 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "default_tile/default_tile.h"
 #include "tile_config.h"
 #include "log.h"
+
+#define USING_SKEWED_TILES
+
+#ifdef USING_SKEWED_TILES
+#include "skewed_tile/skewed_tile.h"
+#else
+#define TILE_FROM_RES
+#include "default_tile/default_tile.h"
+#endif
 
 typedef struct CanvasConfig
 {
@@ -17,22 +25,59 @@ CanvasConfig canvasConfig;
 // TODO: OTHER TILES
 CanvasConfig createCanvasConfig() {
     log_mes("createCanvasConfig");
+#ifdef TILE_FROM_RES //TODO: Everything that uses TILE_FROM_RES is disgusting
     CanvasConfig config = {
-        .image = { 600, 600},
+        .image = { 2*128, 2*128},
+        .tile = { 32, 32}
+    };
+#else
+    CanvasConfig config = {
+        .image = { 360, 360},
         .tile = { 60, 60}
     };
+#endif
     return config;
 }
 int createImage(void** tileMap);
 void **generatePlane();
 
 #ifdef STANDALONE
-int main() {
+int make();
+int main(){
+    char userInput;
+
+    while (1) {
+        printf("Enter 'r' to perform a specific action or 'q' to quit: ");
+        userInput = getchar();
+
+        // Consume any remaining characters in the input buffer until a newline character
+        while (getchar() != '\n')
+            continue;
+
+        if (userInput == 'r') {
+            // Perform the specific action when 'r' is entered
+            printf("Performing the action for 'r'.\n");
+            make();
+        } else if (userInput == 'q') {
+            // Quit the loop when 'q' is entered
+            printf("Quitting the program.\n");
+            break;
+        } else {
+            printf("Invalid input. Please enter 'r' or 'q'.\n");
+        }
+    }
+    return 0;
+}
+
+int make() {
     srand(time(NULL));
     log_mes("Program started!");
     canvasConfig = createCanvasConfig();
+#ifdef USING_SKEWED_TILES
+    tileConfig  = createSkewedTileConfig();
+#else
     tileConfig  = createDefaultTileConfig();
-    
+#endif
     void** tileMap = generatePlane();
 
     if(tileMap == NULL) {

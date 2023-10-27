@@ -2,11 +2,17 @@
 #include <stdio.h>
 #include "../log.h"
 
-/*
 // PRINTS tile ids, to make sure that tile set generated correctly
-    #define VALIDATE_TILE_IDS
+// #define VALIDATE_TILE_IDS
 
-*/ 
+
+#ifdef TILE_FROM_RES
+// #define IMAGE_PATH "wang_tiles/default_tile/res/wang2e.png"
+#define IMAGE_PATH "wang_tiles/default_tile/res/pipe1.png"
+#include "dt_image_get.h"
+#else
+#include "dt_image_gen.h"
+#endif
 
 #ifndef DEFAULT_TILE_H
 #define DEFAULT_TILE_H
@@ -23,28 +29,13 @@ typedef struct DefaultTile
 
 #include "../tile_config.h"
 #include "../tile_image.h"
-#include "dt_image_gen.h"
 
-
-bool isDefaultTileMatch(DefaultTile *tile, DefaultTile *compare, int side) {
-    
-    if (compare == NULL) return true;
-    
-    switch (side)
-    {
-        case 0:
-            return tile->top == compare->bottom;
-        case 1:
-            return tile->right == compare->left;
-        case 2:
-            return tile->bottom == compare->top;
-        case 3:
-            return tile->left == compare->right;
-    }    
-
-    return false;
+int getTileId(DefaultTile* tile){
+    return (tile->top == 0? 0: 1)
+            + (tile->right == 0? 0: 2) 
+            + (tile->bottom == 0? 0: 4)
+            + (tile->left == 0 ? 0 : 8);
 }
-
 
 DefaultTile** generateTileSet(int* size) {
     DefaultTile **tileSet = (DefaultTile**) malloc(16*sizeof(DefaultTile*));
@@ -74,18 +65,33 @@ DefaultTile** generateTileSet(int* size) {
             + (tileSet[i]->right == 0? 0: 2) 
             + (tileSet[i]->bottom == 0? 0: 4)
             + (tileSet[i]->left == 0 ? 0 : 8);
+        printf("%d, ", sum);
     }
+    printf("\n");
     #endif
     *size = 16;
     return tileSet;
 }
 
 // TODO: Caching
+TileImage* importFromImage(
+    const char* filePath,
+    DefaultTile* tile,
+    int tile_width,
+    int tile_height
+);
+
+TileImage* generateTileImage(DefaultTile* tile, int tile_width, int tile_height);
 
 TileImage* getTileImage(void* tile, int tile_width, int tile_height) {
     if(tile == NULL) return NULL;
+#ifdef TILE_FROM_RES
+    DefaultTile* defaultTile = (DefaultTile*) tile;
+    return importFromImage(IMAGE_PATH, defaultTile, tile_width, tile_height);
+#else
     DefaultTile* defaultTile = (DefaultTile*) tile;
     return generateTileImage(defaultTile, tile_width, tile_height);
+#endif
 }
 
 DefaultTile** defaultTileMapBuilder(int rows, int cols) {
