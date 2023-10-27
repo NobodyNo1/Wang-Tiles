@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "wang.h": "c",
+        "stdlib.h": "c",
+        "complex": "c",
+        "cmath": "c",
+        "tiles.h": "c"
+    }
+}
