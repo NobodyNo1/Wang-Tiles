@@ -1,7 +1,7 @@
 
 # Tiles practice
 
-Project was created in order to practice in C, mostly in image processing
+Project was created for practicing in C, mainly in image processing
 
 ## Currently contains
 
@@ -17,3 +17,10 @@ Project was created in order to practice in C, mostly in image processing
 
 - [ ] Voronoi
 - [ ] ML shape recognition
+
+
+
+- Resources
+
+https://www.youtube.com/watch?v=ykACzjtR6rc
+http://www.cr31.co.uk/stagecast/wang/intro.html

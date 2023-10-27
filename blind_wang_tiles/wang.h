@@ -4,9 +4,9 @@
 #include "tiles.h"
 #include "image_g.h"
 
+
 #define IMAGE_WIDTH  640
 #define IMAGE_HEIGHT 320
-
 
 
 const int cell_in_column  = 10;
@@ -14,6 +14,7 @@ const int cell_size       = IMAGE_HEIGHT / cell_in_column;
 const int cell_in_row     = IMAGE_WIDTH  / cell_size;
 
 Cell *cells;
+
 
 int setup() {
     cells = (Cell*) calloc(cell_in_row*cell_in_column, sizeof(Cell));
@@ -91,4 +92,18 @@ void print_cells(){
             printf("\n");
         }
     }
+}
+
+
+#ifdef TEST
+#include "test.h"
+int test(){
+    generate_single_tile();
+}
+#endif
+
+int create_wang_tiles(){
+    setup();
+    generate();
+    bake_image();
 }

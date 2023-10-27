@@ -4,6 +4,12 @@
         "stdlib.h": "c",
         "complex": "c",
         "cmath": "c",
-        "tiles.h": "c"
+        "tiles.h": "c",
+        "stdio.h": "c",
+        "ios": "cpp",
+        "default_tile.h": "c",
+        "tile_image.h": "c",
+        "dt_image_gen.h": "c",
+        "time.h": "c"
     }
 }

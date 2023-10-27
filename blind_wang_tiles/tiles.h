@@ -75,7 +75,7 @@ Tile generate_tile(int tile_size, Cell cell) {
 
             double x_diff = j - center;
             double y_diff = i - center;
-            float angle =  atan2(y_diff,x_diff); 
+            float angle = atan2(y_diff,x_diff); 
             int side = UNDEFINED_COLOR_IDX;
             if(minus_half_of_half_angle < angle && angle < half_of_half){
                 side = cell.right;

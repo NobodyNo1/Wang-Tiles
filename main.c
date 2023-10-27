@@ -1,20 +1,5 @@
-#include "wang.h"
 
-#ifdef TEST
-#include "test.h"
-int test(){
-    generate_single_tile();
-}
-#endif
+#define DEBUG
+#define STANDALONE
+#include "wang_tiles/wang.h"
 
-int app(){
-
-    setup();
-    generate();
-    bake_image();
-}
-
-int main() {
-    app();
-    return 0;
-}
