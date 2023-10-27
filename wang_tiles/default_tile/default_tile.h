@@ -7,6 +7,7 @@
 
 
 #ifdef TILE_FROM_RES
+// SOURCE of images http://www.cr31.co.uk/stagecast/wang/tiles_e.html
 // #define IMAGE_PATH "wang_tiles/default_tile/res/wang2e.png"
 #define IMAGE_PATH "wang_tiles/default_tile/res/pipe1.png"
 #include "dt_image_get.h"
