@@ -3,8 +3,9 @@
 #include <stdbool.h>
 #include "tile_config.h"
 #include "log.h"
+#include <time.h>
 
-#define USING_SKEWED_TILES
+// #define USING_SKEWED_TILES
 
 #ifdef USING_SKEWED_TILES
 #include "skewed_tile/skewed_tile.h"
@@ -27,7 +28,7 @@ CanvasConfig createCanvasConfig() {
     log_mes("createCanvasConfig");
 #ifdef TILE_FROM_RES //TODO: Everything that uses TILE_FROM_RES is disgusting
     CanvasConfig config = {
-        .image = { 2*128, 2*128},
+        .image = { 4*128, 4*128},
         .tile = { 32, 32}
     };
 #else
@@ -104,6 +105,7 @@ void **generatePlane() {
         printf("TILE MAP IS NOT ALLOCETED\n");
         return 0;
     }
+clock_t begin = clock();
     for(int i = 0; i < tilesInCol; i++){
         for(int j = 0; j < tilesInRow; j++) {
             int idx = i*tilesInRow + j;
@@ -122,6 +124,9 @@ void **generatePlane() {
             tileMap[idx] = curTile;
         }
     }
+clock_t end = clock();
+double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+printf("tile map generate in : %f sec\n", time_spent);
     return tileMap;
 }
 
@@ -131,6 +136,9 @@ void **generatePlane() {
 #define FILE_PATH "wang_tiles/wang.ppm"
 
 int createImage(void** tileMap) {
+    double time_spent;
+    clock_t begin, end;
+
     log_mes("createImage");
     int tilesInRow = canvasConfig.image.width  / canvasConfig.tile.width;
     int tilesInCol = canvasConfig.image.height / canvasConfig.tile.height;
@@ -140,9 +148,10 @@ int createImage(void** tileMap) {
 
     unsigned char data[dimy][dimx][3];
     int i, j;
-    
 
-    for(int i = 0; i < tilesInCol; i++){
+begin = clock();
+
+    for(int i = 0; i < tilesInCol; i++) {
         for(int j = 0; j < tilesInRow; j++) {
             int idx = i*tilesInRow +j;
             void* tile = tileMap[idx];
@@ -182,6 +191,11 @@ int createImage(void** tileMap) {
         }
     }
 
+end = clock();
+time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+printf("image data created in : %f sec\n", time_spent);
+
+begin = clock();
 
     const int MaxColorValue = 255; // Maximum color value
     const char *comment = "# This is my new binary PPM file";
@@ -202,6 +216,10 @@ int createImage(void** tileMap) {
 
     fclose(fp);
     printf("OK - File %s saved\n", FILE_PATH);
+
+end = clock();
+time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+printf("image file created in : %f sec\n", time_spent);
 
     return EXIT_SUCCESS;
 }

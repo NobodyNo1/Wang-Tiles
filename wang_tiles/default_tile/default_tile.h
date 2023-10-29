@@ -2,9 +2,6 @@
 #include <stdio.h>
 #include "../log.h"
 
-// PRINTS tile ids, to make sure that tile set generated correctly
-// #define VALIDATE_TILE_IDS
-
 
 #ifdef TILE_FROM_RES
 // SOURCE of images http://www.cr31.co.uk/stagecast/wang/tiles_e.html
@@ -31,6 +28,8 @@ typedef struct DefaultTile
 #include "../tile_config.h"
 #include "../tile_image.h"
 
+TileImage** cachedImages;
+
 int getTileId(DefaultTile* tile){
     return (tile->top == 0? 0: 1)
             + (tile->right == 0? 0: 2) 
@@ -56,20 +55,6 @@ DefaultTile** generateTileSet(int* size) {
             }
         }
     }
-    #ifdef VALIDATE_TILE_IDS
-    for(int i = 0; i < 16; i++) {
-        // int sum = (tileSet[i].top == 0? 0: 1)
-        //         + (tileSet[i].right == 0? 0: 2) 
-        //         + (tileSet[i].bottom == 0? 0: 4)
-        //         + (tileSet[i].left == 0 ? 0 : 8);
-        int sum = (tileSet[i]->top == 0? 0: 1)
-            + (tileSet[i]->right == 0? 0: 2) 
-            + (tileSet[i]->bottom == 0? 0: 4)
-            + (tileSet[i]->left == 0 ? 0 : 8);
-        printf("%d, ", sum);
-    }
-    printf("\n");
-    #endif
     *size = 16;
     return tileSet;
 }
@@ -84,14 +69,28 @@ TileImage* importFromImage(
 
 TileImage* generateTileImage(DefaultTile* tile, int tile_width, int tile_height);
 
+
 TileImage* getTileImage(void* tile, int tile_width, int tile_height) {
     if(tile == NULL) return NULL;
 #ifdef TILE_FROM_RES
     DefaultTile* defaultTile = (DefaultTile*) tile;
-    return importFromImage(IMAGE_PATH, defaultTile, tile_width, tile_height);
+
+    TileImage* cached = cachedImages[getTileId(defaultTile)];
+    if(cached != NULL){
+        return cached;
+    }
+    TileImage* newTileImage = importFromImage(IMAGE_PATH, defaultTile, tile_width, tile_height);
+    cachedImages[getTileId(defaultTile)] = newTileImage;
+    return newTileImage;
 #else
     DefaultTile* defaultTile = (DefaultTile*) tile;
-    return generateTileImage(defaultTile, tile_width, tile_height);
+    TileImage* cached = cachedImages[getTileId(defaultTile)];
+    if(cached != NULL){
+        return cached;
+    }
+    TileImage* newTileImage = generateTileImage(defaultTile, tile_width, tile_height);
+    cachedImages[getTileId(defaultTile)] = newTileImage;
+    return newTileImage;
 #endif
 }
 
@@ -152,6 +151,7 @@ TileConfig createDefaultTileConfig(){
     log_mes("createDefaultTileConfig");
     int tileSetSize = 0;
     DefaultTile** tileSet = generateTileSet(&tileSetSize);
+    cachedImages = (TileImage**) calloc(16, sizeof(TileImage*));
 
     TileConfig config = {
         .tileSet = tileSet,
