@@ -21,5 +21,13 @@ typedef struct TileConfig
     );
 } TileConfig;
 
+#define IMAGE_WIDTH     256
+#define IMAGE_HEIGHT    256
+
+typedef struct CanvasConfig
+{
+    Size image;
+    Size tile;
+} CanvasConfig;
 
 #endif

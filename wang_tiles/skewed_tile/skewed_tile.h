@@ -2,14 +2,10 @@
 #include <stdio.h>
 #include "../log.h"
 
-/*
-// PRINTS tile ids, to make sure that tile set generated correctly
-    #define VALIDATE_TILE_IDS
-
-*/ 
-
 #ifndef SKEWED_TILE_H
 #define SKEWED_TILE_H
+
+//TODO: keep up with default tile impl
 
 //TODO: FIX CYCLIC DEPENDENCY
 
@@ -30,39 +26,25 @@ typedef struct SkewedTile
 SkewedTile** generateTileSet(int* size) {
     SkewedTile **tileSet = (SkewedTile**) malloc(16*sizeof(SkewedTile*));
     int i = 0;
-    for(int top = 0; top < 2; top++) {
-        for(int right = 0; right < 2; right++) {
-            for(int bottom = 0; bottom < 2; bottom++) {
-                for(int left = 0; left < 2; left++) {
+    for(int topLeft = 0; topLeft < 2; topLeft++) {
+        for(int topRight = 0; topRight < 2; topRight++) {
+            for(int bottomLeft = 0; bottomLeft < 2; bottomLeft++) {
+                for(int bottomRight = 0; bottomRight < 2; bottomRight++) {
                     SkewedTile* item = (SkewedTile*)malloc(sizeof(SkewedTile));
-                    //TODO: NAMING
-                    item->topLeft       = top   ;
-                    item->topRight      = right ;
-                    item->bottomLeft    = bottom;
-                    item->bottomRight   = left  ;
-                    tileSet[i]     = item;
+                    item->topLeft       = topLeft       ;
+                    item->topRight      = topRight      ;
+                    item->bottomLeft    = bottomLeft    ;
+                    item->bottomRight   = bottomRight   ;
+                    tileSet[i]          = item          ;
                     i++;
                 }
             }
         }
     }
-    #ifdef VALIDATE_TILE_IDS
-    for(int i = 0; i < 16; i++) {
-        // int sum = (tileSet[i].top == 0? 0: 1)
-        //         + (tileSet[i].right == 0? 0: 2) 
-        //         + (tileSet[i].bottom == 0? 0: 4)
-        //         + (tileSet[i].left == 0 ? 0 : 8);
-        int sum = (tileSet[i]->top == 0? 0: 1)
-            + (tileSet[i]->right == 0? 0: 2) 
-            + (tileSet[i]->bottom == 0? 0: 4)
-            + (tileSet[i]->left == 0 ? 0 : 8);
-    }
-    #endif
+
     *size = 16;
     return tileSet;
 }
-
-// TODO: Caching
 
 TileImage* getTileImage(void* tile, int tile_width, int tile_height) {
     if(tile == NULL) return NULL;

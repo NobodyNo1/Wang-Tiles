@@ -1,0 +1,14 @@
+Image: 512x512
+
+Status: preload-cache: 1, threads:1
+
+[Benchmark] Image data creation : 0.000783 sec
+[Benchmark] Image data creation : 0.000850 sec
+[Benchmark] Image data creation : 0.000877 sec
+
+
+Status: preload-cache: 1, threads:4
+
+[Benchmark] Image data creation : 0.001119 sec
+[Benchmark] Image data creation : 0.001371 sec
+[Benchmark] Image data creation : 0.001049 sec

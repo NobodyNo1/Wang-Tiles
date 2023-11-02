@@ -1,15 +1,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../log.h"
-
+#include "stdbool.h"
+#include "../tile_config.h"
 
 #ifdef TILE_FROM_RES
 // SOURCE of images http://www.cr31.co.uk/stagecast/wang/tiles_e.html
 // #define IMAGE_PATH "wang_tiles/default_tile/res/wang2e.png"
 #define IMAGE_PATH "wang_tiles/default_tile/res/pipe1.png"
+#define TILE_COUNT 16
+void freeImage();
 #include "dt_image_get.h"
+
 #else
+
 #include "dt_image_gen.h"
+
 #endif
 
 #ifndef DEFAULT_TILE_H
@@ -38,7 +44,7 @@ int getTileId(DefaultTile* tile){
 }
 
 DefaultTile** generateTileSet(int* size) {
-    DefaultTile **tileSet = (DefaultTile**) malloc(16*sizeof(DefaultTile*));
+    DefaultTile **tileSet = (DefaultTile**) malloc(TILE_COUNT*sizeof(DefaultTile*));
     int i = 0;
     for(int top = 0; top < 2; top++) {
         for(int right = 0; right < 2; right++) {
@@ -55,11 +61,10 @@ DefaultTile** generateTileSet(int* size) {
             }
         }
     }
-    *size = 16;
+    *size = TILE_COUNT;
     return tileSet;
 }
 
-// TODO: Caching
 TileImage* importFromImage(
     const char* filePath,
     DefaultTile* tile,
@@ -72,26 +77,20 @@ TileImage* generateTileImage(DefaultTile* tile, int tile_width, int tile_height)
 
 TileImage* getTileImage(void* tile, int tile_width, int tile_height) {
     if(tile == NULL) return NULL;
-#ifdef TILE_FROM_RES
-    DefaultTile* defaultTile = (DefaultTile*) tile;
 
-    TileImage* cached = cachedImages[getTileId(defaultTile)];
-    if(cached != NULL){
-        return cached;
-    }
-    TileImage* newTileImage = importFromImage(IMAGE_PATH, defaultTile, tile_width, tile_height);
-    cachedImages[getTileId(defaultTile)] = newTileImage;
-    return newTileImage;
-#else
     DefaultTile* defaultTile = (DefaultTile*) tile;
     TileImage* cached = cachedImages[getTileId(defaultTile)];
+   
     if(cached != NULL){
         return cached;
     }
+#ifdef TILE_FROM_RES
+    TileImage* newTileImage = importFromImage(IMAGE_PATH, defaultTile, tile_width, tile_height);
+#else
     TileImage* newTileImage = generateTileImage(defaultTile, tile_width, tile_height);
+#endif
     cachedImages[getTileId(defaultTile)] = newTileImage;
     return newTileImage;
-#endif
 }
 
 DefaultTile** defaultTileMapBuilder(int rows, int cols) {
@@ -146,21 +145,37 @@ bool isDefaultTileMatching(
     return isMatching;
 }
 
-// TODO: TILECONFIG is shadowed import
 TileConfig createDefaultTileConfig(){
     log_mes("createDefaultTileConfig");
     int tileSetSize = 0;
     DefaultTile** tileSet = generateTileSet(&tileSetSize);
-    cachedImages = (TileImage**) calloc(16, sizeof(TileImage*));
+    cachedImages = (TileImage**) calloc(TILE_COUNT, sizeof(TileImage*));
 
     TileConfig config = {
-        .tileSet = tileSet,
-        .tileSetSize = tileSetSize,
-        &defaultTileMapBuilder,
-        &isDefaultTileMatching,
-        &getTileImage
+        // some values needs to type casted (because of warnings)
+        (void**)                                        tileSet,
+                                                        tileSetSize,
+        (void** (*)( int, int))                         &defaultTileMapBuilder,
+        (bool   (*)(int, int, void*, int, int, void**)) &isDefaultTileMatching,
+                                                        &getTileImage
     };
     return config;
 }
 
+void clearCache();
+
+void freeConfig(){
+#ifdef TILE_FROM_RES
+    freeImage();
+#endif
+    clearCache();
+}
+
+void clearCache() {
+    for(int i = 0; i < TILE_COUNT; ++i){
+        free(cachedImages[i]->cells);
+        free(cachedImages[i]);
+    }
+    free(cachedImages);
+}
 #endif

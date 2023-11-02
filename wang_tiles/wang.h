@@ -1,9 +1,24 @@
+#define MEM_TRACK
+
+#ifdef MEM_TRACK
+#include "cmemcounter.h"
+#endif
+
 #include <time.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <time.h>
+
+
 #include "tile_config.h"
 #include "log.h"
-#include <time.h>
+#include "benchmark_helper.h"
+
+
+#define TILE_WIDTH      32
+#define TILE_HEIGHT     32
+
+#include "file_writer.h"
 
 // #define USING_SKEWED_TILES
 
@@ -14,22 +29,20 @@
 #include "default_tile/default_tile.h"
 #endif
 
-typedef struct CanvasConfig
-{
-    Size image;
-    Size tile;
-} CanvasConfig;
+#define FILE_PATH "wang_tiles/wang.ppm"
 
 TileConfig tileConfig;
 CanvasConfig canvasConfig;
+
+
 // TODO: MEMORY MANAGMENT
 // TODO: OTHER TILES
 CanvasConfig createCanvasConfig() {
     log_mes("createCanvasConfig");
-#ifdef TILE_FROM_RES //TODO: Everything that uses TILE_FROM_RES is disgusting
+#ifdef TILE_FROM_RES
     CanvasConfig config = {
-        .image = { 4*128, 4*128},
-        .tile = { 32, 32}
+        .image = { IMAGE_WIDTH, IMAGE_HEIGHT},
+        .tile = { TILE_WIDTH, TILE_HEIGHT}
     };
 #else
     CanvasConfig config = {
@@ -44,10 +57,13 @@ void **generatePlane();
 
 #ifdef STANDALONE
 int make();
-int main(){
-    char userInput;
+int setup();
+void cleanUp();
 
-    while (1) {
+int main() {
+    setup();
+    char userInput;
+    while (true) {
         printf("Enter 'r' to perform a specific action or 'q' to quit: ");
         userInput = getchar();
 
@@ -66,26 +82,39 @@ int main(){
         } else {
             printf("Invalid input. Please enter 'r' or 'q'.\n");
         }
+#ifdef MEM_TRACK
+        printf("[Memory] usage: %zu\n", malloced_memory_usage);
+#endif
     }
+    cleanUp();
+#ifdef MEM_TRACK
+    printf("[Memory] Finished with: %zu\n", malloced_memory_usage);
+#endif
     return 0;
 }
 
-int make() {
-    srand(time(NULL));
+int setup() {
     log_mes("Program started!");
+    srand(time(NULL));
     canvasConfig = createCanvasConfig();
 #ifdef USING_SKEWED_TILES
     tileConfig  = createSkewedTileConfig();
 #else
     tileConfig  = createDefaultTileConfig();
 #endif
+    return 0;
+}
+
+int make() {
     void** tileMap = generatePlane();
 
     if(tileMap == NULL) {
-        printf("PANIC tileMap is NULL\n");
+        log_mes("PANIC tileMap is NULL");
         return -1;
     }
-    createImage(tileMap);
+    writeFilesToImage(FILE_PATH, &canvasConfig, &tileConfig, tileMap);
+
+    free(tileMap);
     return 0;
 }
 #endif
@@ -105,7 +134,7 @@ void **generatePlane() {
         printf("TILE MAP IS NOT ALLOCETED\n");
         return 0;
     }
-clock_t begin = clock();
+clockStart();
     for(int i = 0; i < tilesInCol; i++){
         for(int j = 0; j < tilesInRow; j++) {
             int idx = i*tilesInRow + j;
@@ -124,102 +153,20 @@ clock_t begin = clock();
             tileMap[idx] = curTile;
         }
     }
-clock_t end = clock();
-double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-printf("tile map generate in : %f sec\n", time_spent);
+clockEnd("Tile Map Generatation");
+    
     return tileMap;
 }
 
-#include <stdlib.h>
-#include <stdio.h>
-
-#define FILE_PATH "wang_tiles/wang.ppm"
-
-int createImage(void** tileMap) {
-    double time_spent;
-    clock_t begin, end;
-
-    log_mes("createImage");
-    int tilesInRow = canvasConfig.image.width  / canvasConfig.tile.width;
-    int tilesInCol = canvasConfig.image.height / canvasConfig.tile.height;
-
-    const int dimx  = canvasConfig.image.width;
-    const int dimy = canvasConfig.image.height;
-
-    unsigned char data[dimy][dimx][3];
-    int i, j;
-
-begin = clock();
-
-    for(int i = 0; i < tilesInCol; i++) {
-        for(int j = 0; j < tilesInRow; j++) {
-            int idx = i*tilesInRow +j;
-            void* tile = tileMap[idx];
-            
-            if(tile == NULL) {
-                printf("PANIC tile is NULL\n");
-                return -1;
-            }
-            TileImage* tileImage = tileConfig.getTileImage(
-                tile, 
-                canvasConfig.tile.width,
-                canvasConfig.tile.height
-            );
-            if(tileImage == NULL){
-                printf("PANIC tileImage is NULL\n");
-                return -1;
-            }
-
-            int draw_x = j* canvasConfig.tile.width;
-            int draw_y = i* canvasConfig.tile.height;
-
-            for(int y = 0; y < canvasConfig.tile.height; y++){
-                for(int x = 0; x < canvasConfig.tile.width; x++)
-                {
-                    int cellIdx = y*canvasConfig.tile.width + x; 
-
-                    int red = tileImage->cells[cellIdx].red;  
-                    int green = tileImage->cells[cellIdx].green;
-                    int blue = tileImage->cells[cellIdx].blue; 
-
-                    data[y+draw_y][x+draw_x][0] = tileImage->cells[cellIdx].red;    /* red */
-                    data[y+draw_y][x+draw_x][1] = tileImage->cells[cellIdx].green;  /* green */
-                    data[y+draw_y][x+draw_x][2] = tileImage->cells[cellIdx].blue;   /* blue */
-                }
-            }
-        
-        }
+void cleanUp() {
+    FileWriterCleanUp();
+#ifdef USING_SKEWED_TILES
+    //TODO: clear skewed
+#else
+    for(int i = 0; i < tileConfig.tileSetSize; ++i){
+        free(tileConfig.tileSet[i]);
     }
-
-end = clock();
-time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-printf("image data created in : %f sec\n", time_spent);
-
-begin = clock();
-
-    const int MaxColorValue = 255; // Maximum color value
-    const char *comment = "# This is my new binary PPM file";
-    /* Create a new file, give it a name, and open it in binary mode */
-    FILE *fp = fopen(FILE_PATH, "wb");
-
-    /* Write header to the file (P6 format) */
-    fprintf(fp, "P6\n%s\n%d %d\n%d\n", comment, dimx, dimy, MaxColorValue);
-
-    /* Write image data bytes to the file */
-    for (int y = 0; y < dimy; ++y) {
-        for (int x = 0; x < dimx; ++x) {
-            for (int c = 0; c < 3; ++c) {
-                fputc(data[y][x][c], fp);
-            }
-        }
-    }
-
-    fclose(fp);
-    printf("OK - File %s saved\n", FILE_PATH);
-
-end = clock();
-time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-printf("image file created in : %f sec\n", time_spent);
-
-    return EXIT_SUCCESS;
+    free(tileConfig.tileSet);
+    freeConfig();
+#endif
 }

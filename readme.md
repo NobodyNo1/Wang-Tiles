@@ -1,26 +1,29 @@
-
-# Tiles practice
-
-Project was created for practicing in C, mainly in image processing
-
-## Currently contains
+# Wang Tiles
 
 ![image](/docs/wang.png)
-- Wang tiles
+
+Project was created for practicing in C, implements wang tiles
+
 
 ## TODO:
 
-- [ ] Wang tiles
-    - [x] Basic Implementation
-    - [ ] different shapes
-    - [ ] parrallel processing
+- [x] Basic Wang tiles Implementation
+- [ ] Different shapes
+    - [x] Tiles from image file
+- [x] parrallel processing (threads didn't have positive effect)
+- [ ] Make solution generic
+    - [ ] Different tile size support
+    - [ ] Solve conflicts with tiles not fitting into resulting image size
+- [ ] Interactions 
+    - [ ] Configuring tiles and result image size
+    - [ ] Importing tiles
+- [ ] GUI
+- [ ] Configure own tile matching rule set
 
-- [ ] Voronoi
-- [ ] ML shape recognition
+- [ ] Support all platform build scripts and builds
 
 
 
-- Resources
 
-https://www.youtube.com/watch?v=ykACzjtR6rc
-http://www.cr31.co.uk/stagecast/wang/intro.html
+### Resources:
+- http://www.cr31.co.uk/stagecast/wang/intro.html

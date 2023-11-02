@@ -1,9 +1,12 @@
+/*
+    Blind implementation with generated tiles, not sure could it be called wang tiles
+    leaved code just for history, needs to be removed 
+*/
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
 #include "tiles.h"
 #include "image_g.h"
-
 
 #define IMAGE_WIDTH  640
 #define IMAGE_HEIGHT 320

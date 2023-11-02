@@ -19,13 +19,13 @@ TileImage* importFromImage(
     int tile_width,
     int tile_height
 ) {
-    // TODO: CACHING
     TileImage* tileImage = (TileImage*) malloc(sizeof(TileImage));
     tileImage->cells     = (Color*) calloc(tile_width*tile_height, sizeof(Color));
 
     if(imageData == NULL){
         loadImage(filePath);
     }
+    //TODO: depends on image source
     int idToPositionMap[] = {
         4, 6, 14, 12,
         5, 7, 15, 13,
@@ -51,12 +51,9 @@ TileImage* importFromImage(
             int idx = i * width + j;
             int tileX = j - x;
             int tileIdx = tileY * tile_width + tileX;
-            tileImage->cells[tileIdx].red = imageData[idx * 3];
+            tileImage->cells[tileIdx].red   = imageData[idx * 3];
             tileImage->cells[tileIdx].green = imageData[idx * 3 + 1];
-            tileImage->cells[tileIdx].blue = imageData[idx * 3 + 2];
-            // tileImage->cells[idx].red   = imageData[idx * 3];
-            // tileImage->cells[idx].green = imageData[idx * 3 + 1];
-            // tileImage->cells[idx].blue  = imageData[idx * 3 + 2];
+            tileImage->cells[tileIdx].blue  = imageData[idx * 3 + 2];
         }
     }
     return tileImage;
@@ -70,7 +67,12 @@ int loadImage(const char* imagePath) {
         printf("Failed to load image.\n");
         return 1;
     }
+    return 0;
 }
 
+void freeImage() {
+    stbi_image_free(imageData);
+    imageData = NULL;
+}
 
 #endif

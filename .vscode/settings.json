@@ -16,6 +16,17 @@
         "string": "cpp",
         "string_view": "cpp",
         "vector": "cpp",
-        "tile_config.h": "c"
+        "tile_config.h": "c",
+        "__bit_reference": "cpp",
+        "__hash_table": "cpp",
+        "__split_buffer": "cpp",
+        "initializer_list": "cpp",
+        "unordered_map": "cpp",
+        "file_writer.h": "c",
+        "benchmark_helper.h": "c",
+        "pthread.h": "c",
+        "log.h": "c",
+        "cmemcounter.h": "c",
+        "stdbool.h": "c"
     }
 }
